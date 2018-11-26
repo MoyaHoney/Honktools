@@ -1,13 +1,17 @@
 import os
+import logging
+
+honktools_logger = logging.getLogger(os.path.split(os.getcwd())[1] + "\\" + __name__ + ".py")
+logging.basicConfig(level=logging.DEBUG)
 
 
 def skeleton_folders(*args):
     """Makes a copy of a folder and all subfolders, while ignoring files."""
+    honktools_logger.debug("*args == " + str(args))
     # Testing if *args have been filled out.
-    if len(args) == 0:
+    if not args:
         args_filled = False
-        mode_args = False
-    elif len(args) > 0:
+    elif args:
         args_filled = True
         number_of_filled_args = len(args)
 
