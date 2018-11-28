@@ -13,19 +13,23 @@ def skeleton_folders(*args):
     # Testing if *args have been filled out.
     if not args:
         args_filled = False
-    elif args:
+        number_of_filled_args = 0
+    else:
         args_filled = True
         number_of_filled_args = len(args)
 
     # Output statement if *args filled out incorrectly
     def arg_error():
-        print("""You have supplied """ + str(len(args)) + """ arguments. Either you have not supplied valid
-        arguments, or too few arguments. Function will now continue in a 'input mode'""")
-        # TODO Replace with a proper logging/raise.
+        """Error to raise when *args are supplied, but filled out incorrectly."""
+        raise Exception("""You have supplied """ + str(len(args)) + """ arguments. Either you have not supplied valid
+        arguments, or too few arguments.""")
 
     # Function to call whenever a error has happened.
-    # error_types: 1 = create_dir_error, TODO fill in error_types
+    # error_types: 0 = non_existing_dir_error, 1 = create_dir_error, TODO fill in error_types
     def on_error(error_type, *on_error_args):
+        """Func that outputs text whenever something that cannot be handled occurs. Mostly outputs text."""
+        if error_type == 0:
+            print(on_error_args[0] + "\ndoesn't appear to be a real directory. Please input a real directory.")
         if error_type == 1:
             print("Failed to create " + on_error_args[0])
             print("""\nYou may be running with improper permissions, or trying to create a
@@ -36,6 +40,7 @@ def skeleton_folders(*args):
 
     # Checks to see if a the supplied output directory should be created if it does not exist.
     def ask_for_arg3():
+        """Universal func that will ask if a non-existing output directory should be created."""
         print("It looks like ", end="")
         if args_filled:
             print(args[1], end="")
@@ -45,9 +50,9 @@ def skeleton_folders(*args):
 
         create_2nd_dir = None
         while create_2nd_dir is None:
-            create_2nd_dir = (input("Would you like to create it?\nY/N: \n")).upper()
+            create_2nd_dir = (input("Would you like to create it?\nY/N: ")).upper()
             if create_2nd_dir == "N":
-                prompt_exit = (input("Would you like to exit?\nY/N: \n")).upper()
+                prompt_exit = (input("Would you like to exit?\nY/N: ")).upper()
                 if prompt_exit == "Y":
                     sys.exit("User prompted to exit.")
                 else:
@@ -78,5 +83,49 @@ def skeleton_folders(*args):
                             os.makedirs(args[1])
                         except:
                             on_error(1, args[1])
-                    elif ask_for_arg3() == "N":
-                        pass
+
+    def input_mode():
+        """Non-Automated handler to be used with a command line. Assumes *args weren't supplied."""
+        # Sets default arguments to none in order to get valid input in while loops
+        arg1, arg2, arg3 = None, None, None
+
+        # Gather first argument...
+        while arg1 is None:
+            arg1 = input("Please input a directory to copy: ")
+            if not os.path.isdir(arg1):
+                on_error(0, arg1)
+                arg1 = None
+        # Gather second argument...
+        while arg2 is None:
+            arg2 = input("Please input a output folder to copy into: ")
+            # If the second arguments dir does not exist, ask to create it.
+            if not os.path.isdir(arg2):
+                print(arg2 + "\ndoes not exist.")
+                while arg3 is None:
+                    arg3 = (input("Would you like to create it?\nY/N: ")).upper()
+                    if arg3 == "Y":
+                        try:
+                            os.makedirs(arg2)
+                        except:
+                            on_error(1, arg2)
+                    else:
+                        prompt_exit = None
+                        while prompt_exit is None:
+                            prompt_exit = input("Then would you like to exit?\nY/N: ").upper()
+                            if prompt_exit == "Y":
+                                sys.exit("User exited")
+                            elif prompt_exit == "N":
+                                arg2, arg3, prompt_exit = None, None, None
+                            else:
+                                print("Invalid input.")
+                                prompt_exit = None
+
+        # Pack input_mode_args into a tuple...
+        if arg3 == "Y":
+            input_mode_args = (arg1, arg2, True)
+        else:
+            input_mode_args = (arg1, arg2)
+
+    if not args_filled:
+        input_mode()
+        # TODO Continue here...
